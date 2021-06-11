@@ -1,9 +1,10 @@
 {
-  "name": "myfunction-function",
-  "version": "0.0.1",
-  "author": "TODO",
-  "description": "TODO",
-  "license": "UNLICENSED",
+  "name": "processlargedata-js-function",
+  "private": true,
+  "version": "1.0.0",
+  "author": "salesforce.com",
+  "description": "This function takes a large JSON payload, calculates the distance between a supplied cordinate and the data, sorts it, and returns the nearest x results.",
+  "license": "CC0-1.0",
   "main": "index.js",
   "repository": {
     "type": "git"

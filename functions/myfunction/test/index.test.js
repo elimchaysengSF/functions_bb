@@ -1,68 +1,54 @@
-const { expect } = require('chai');
-const { createSandbox } = require('sinon');
+"use strict";
 
-const execute = require('../index');
+const { expect } = require("chai");
+const { createSandbox } = require("sinon");
+
+const execute = require("../index");
+const payload = require("../data/sample-payload.json");
 
 /**
- * Myfunction unit tests.
+ * processlargedatajs Function unit tests.
  */
+describe("Unit Tests", () => {
+  let sandbox;
+  let mockContext;
+  let mockLogger;
 
-describe('Unit Tests', () => {
+  beforeEach(() => {
+    mockContext = {
+      logger: { info: () => {} }
+    };
 
-    let sandbox;
-    let mockContext;
-    let mockLogger;
-    let accounts;
+    mockLogger = mockContext.logger;
+    sandbox = createSandbox();
 
-    beforeEach(() => {
-        mockContext = {
-            org: {
-                dataApi: { query: () => {} }
-            },
-            logger: { info: () => {} }
-        };
+    sandbox.stub(mockLogger, "info");
+  });
 
-        mockLogger = mockContext.logger;
-        sandbox = createSandbox();
+  afterEach(() => {
+    sandbox.restore();
+  });
 
-        sandbox.stub(mockContext.org.dataApi, "query");
-        sandbox.stub(mockLogger, "info");
+  it("Invoke ProcessLargeData with valid data", async () => {
+    // Invoke function
+    const results = await execute({ data: payload }, mockContext, mockLogger);
 
-        accounts = {
-            'totalSize': 3,
-            'done': true,
-            'records': [
-                {
-                    'type': 'Account',
-                    'fields': { 'Name': 'Global Media' }
-                },
-                {
-                    'type': 'Account',
-                    'fields': { 'Name': 'Acme' }
-                },
-                {
-                    'type': 'Account',
-                    'fields': { 'Name': 'salesforce.com' }
-                }
-            ]
-        };
+    // Validate
+    expect(results).to.be.not.undefined;
+    expect(results.schools).to.be.an("array");
+    expect(results.schools.length).to.be.eql(payload.length);
+  });
 
-        mockContext.org.dataApi.query.callsFake(() => {
-            return Promise.resolve(accounts);
-        });
-    });
+  it("Invoke ProcessLargeData with missing coordinates", async () => {
+    try {
+      // Invoke function with missing coordinates
+      await execute({ data: {} }, mockContext, mockLogger);
+    } catch (err) {
+      expect(mockLogger.info.callCount).to.be.eql(1);
+      expect(err.message).to.match(/provide latitude and longitude/);
+      return;
+    }
 
-    afterEach(() => {
-        sandbox.restore();
-    });
-
-    it('Invoke Myfunction', async () => {
-        const results = await execute({ data: {} }, mockContext, mockLogger);
-
-        expect(mockContext.org.dataApi.query.callCount).to.be.eql(1);
-        expect(mockLogger.info.callCount).to.be.eql(2);
-        expect(results).to.be.not.undefined;
-        expect(results).has.property('totalSize');
-        expect(results.totalSize).to.be.eql(accounts.totalSize);
-    });
+    expect(false, "function must throw").to.be.ok;
+  });
 });
